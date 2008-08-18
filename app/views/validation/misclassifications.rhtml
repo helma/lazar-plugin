@@ -1,0 +1,50 @@
+<div class='lazar-form'>
+
+  <a name="misclass"></a>
+
+  <h3>Misclassifications for <%= @module.endpoint.downcase %> within the applicability domain</h3>
+				
+				(i.e. confidence 	 &gt; <%= @conf_limit %>) <p/>
+  These are the most problematic misclassifications, which may be caused by questionable experimental results and/or shortcomings of the prediction algorithm. Click on the ID to retrieve the complete prediction. Please contact <%= mail_to "helma@in-silico.de", nil,  :replace_at => "[at]",  :encode => "javascript" %> if you want to comment.<p/>
+
+
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>SMILES</th>
+        <th>Prediction</th>
+        <th>Activity</th>
+        <th>Confidence</th>
+        <th>Remarks</th>
+      </tr>
+      <% @misclassifications.each do |misclass| %>
+        <% if misclass[:confidence] > @conf_limit %>
+          <tr>
+            <td><%= link_to misclass[:id],{ :controller => :lazar, :action => :prediction, :endpoint_id => @module.id, :smiles => misclass[:smiles]}, :target => "_blank" %></td>
+            <td><%= display_smiles(misclass[:smiles]) %></td>
+            <% if misclass[:unknown_features] %>
+              <td class="unknown"><%= translate_activity(misclass[:prediction],@module.unit) %></td>
+            <% else %>
+              <td class="<%=  translate_activity(misclass[:prediction],@module.unit)%>"><%= translate_activity(misclass[:prediction],@module.unit) %></td>
+            <% end %>
+            <td 
+              <% if misclass[:db_activities].size == 1 %>
+                class="<%= translate_activity(misclass[:db_activities][0],@module.unit)%>"
+              <% end %>
+              >
+            <% misclass[:db_activities].each do |d| %>
+              <%= translate_activity(d,@module.unit)   %><br/>
+            <% end %>
+            </td>
+            <td><%= misclass[:confidence] %></td>
+            <td>
+              <% if misclass[:unknown_features] %>
+                unknown or infrequent fragments
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    </table>
+
+</div>

@@ -1,0 +1,36 @@
+<div class='lazar-prediction'>
+  <%= flash[:notice] %>
+
+  Page: <%= session[:page] %>/<%= @nr_pages %> <%= link_to "first", :action => :batch_results, :page => 1, :endpoint_id => params[:endpoint_id] %> <%= link_to "previous", :action => :batch_results, :page => @previous_page, :endpoint_id => params[:endpoint_id] if @previous_page > 0 %> <%= link_to "next", :action => :batch_results, :page => @next_page, :endpoint_id => params[:endpoint_id] unless @next_page > @nr_pages %> <%= link_to "last", :action => :batch_results, :page => @nr_pages, :endpoint_id => params[:endpoint_id] %><p/>
+
+  <table>
+
+    <tr>
+      <th colspan='7'><%= @lazar_module.lazar_category.name %> - <%=  @lazar_module.endpoint %> </th>
+    </tr>
+    <tr>
+      <th>ID</th><th>Structure</th><th>Prediction</th><th>Confidence</th><th>Unknown Fragments</th><th>Smiles</th>
+    </tr>
+    <% nr = 0 %>
+    <% @results.each do |id,lazar| %>
+    <tr>
+      <td><%= id %></td>
+      <td><%= display_smiles_with_fragments(lazar.smiles,lazar.activating_fragments,lazar.deactivating_fragments,lazar.activating_p,lazar.deactivating_p,lazar.unknown_fragments) %></td>
+      <td class="<%=!lazar.prediction.blank? ? 'unknown' : translate_activity(lazar.prediction) %>"><%= translate_activity(lazar.prediction) %><br/>
+        <%= lazar.unreliable_explanation %><br/>
+        <%= link_to "(Details)", { :action => :prediction, :smiles => h(lazar.smiles), :endpoint_id => @lazar_module.id } %>
+      </td>
+      <td><%= lazar.confidence %></td>
+      <td>
+        <% if lazar.unknown_fragments %> yes
+        <% else %> no
+        <% end %>
+      </td>
+      <td><%= lazar.smiles %></td>
+    </tr>
+    <% nr += 1 %>
+    <% end %>
+  </table>
+
+</div>
+

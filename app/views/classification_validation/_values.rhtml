@@ -1,0 +1,8 @@
+<% values.each do |v| %>
+  <% if v.class == Float %>
+  <td> <%= sprintf("%.2f",v) %> </td>
+  <% else %>
+  <td> <%= v %> </td>
+  <% end %> 
+<% end %>
+

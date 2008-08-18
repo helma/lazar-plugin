@@ -1,0 +1,21 @@
+<div class="lazar-prediction">
+  <h1><%= File.basename(params["endpoint"]).capitalize %> misclassifications</h1>
+  Version: <%= params["version"] %> <p/>
+  <table>
+    <tr>
+      <th>ID</th><th>Structure</th><th>Prediction</th><th>Database</th><th>Confidence</th>
+    </tr>
+    <% @misclassifications.each do |c| %>
+      <% if c["confidence"].to_f > 0.025 %>
+      <tr>
+        <th><%= c["id"] %></th>
+        <td><%= display_smiles(c["smiles"]) %></td>
+        <td><%= c["prediction"] %></td>
+        <td><%= c["db_activity"] %></td>
+        <td><%= c["confidence"] %></td>
+        <td><%= link_to "Details", :controller => :lazar, :action => :prediction, :smiles => c["smiles"], :endpoint_id => @endpoint_id %></td>
+      </th>
+      <% end %>
+    <% end %>
+  </table>
+</div>

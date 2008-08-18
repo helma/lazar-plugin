@@ -1,0 +1,26 @@
+<div class="lazar-form">
+
+  <table>
+    <% @categories.each do |cat| %>
+    <tr>
+      <th><%= cat.name %></th> <th>Branch</th><th>Revision</th><th>Weighted Accuracy</th>
+    </tr>
+    <% cat.lazar_modules.each do |m| %>
+    <% Dir["#{m.directory}/**/*loo"].each do |loo|
+        revision = loo.split(/\//)[-2]
+        branch = loo.split(/\//)[-3]
+        summary_file = loo.sub(/loo/,'summary')
+        accuracy = XmlSimple.xml_in(summary_file, { 'ForceArray' => false })["weighted"]["accuracy"]
+    %>
+    <tr>
+      <td><%= link_to m.endpoint, :action => :validation, :id => m.id %></td>
+      <td><%= branch %></td>
+      <td><%= revision %></td>
+      <td><%= sprintf("%.2f", accuracy.to_f) %></td>
+      <% end %>
+    </tr>
+    <% end %>
+    <% end %>
+  </table>
+
+</div>

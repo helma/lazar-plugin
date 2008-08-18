@@ -1,0 +1,226 @@
+<div class='lazar-form'>
+
+<table>
+     <tr>
+       <th>Dataset</th>
+       <th>Endpoint</th>
+       <th>Branch</th>
+       <th>AD<sup>[<a href="#ftn.ad">1</a>]</sup></th>
+       <th>Nr<sup>[<a href="#ftn.nr">2</a>]</sup></th>
+       <th>Q<sup>2</sup><sup>[<a href="#ftn.q2">3</a>]</sup></th>
+       <th>WA<sup>[<a href="#ftn.wa">4</a>]</sup></th>
+       <th>Mean Error<sup>[<a href="#ftn.me">5</a>]</sup></th>
+       <th>RMSE</th>
+    </tr>
+
+
+  <h2>Dataset: <%=@dataset%>(<%=@endpoint%>)<br>Model: <%=@branch%> (r<%=@revision%>) </h2>
+
+  <% if (@summary) %>
+    <!-- Contents -->
+    <ul>
+      <li><a href="#validation">Predictivity</a></li>
+    </ul>
+
+    <!-- LOO -->
+    <hr/>
+      <h3><a name="validation"></a>Validation Results (leave-one-out crossvalidation)</h3>
+     
+  <%  # gather loo data
+      ads = Array.new;
+      nrs = Array.new
+      r_sqs = Array.new
+      was = Array.new
+      mes = Array.new
+      rmses = Array.new
+
+      @summary.each { |d|
+          d.each_key do |k|  
+            if (k.index("ad"))
+                ad = d[k]
+                if (!ads.include?(ad)) 
+                    ads << ad
+                end
+
+                nr = d["nr"]
+                nrs << nr
+                r_sq = d["rsq"]
+                r_sqs << r_sq
+                wa = d["wa"]
+                was << wa
+                me = d["me"]
+                mes << me
+                rmse = d["rmse"]
+                rmses << rmse
+
+      %>
+
+        <tr>
+          <td><%= @dataset %></td>
+          <td><%= @endpoint %></td>
+          <td><%= @branch %></td>
+          <td><%= ad.sub(/ad/,'') %></td>
+          <td><%= nr %></td>
+          <% if (nr.to_i < 30) 
+               if (nr.to_i < 12) 
+               %>
+                 <td><span style="color:red"><%= r_sq %></span></td>
+            <% else %>
+                 <td><span style="color:yellow"><%= r_sq %></span></td>
+            <% end %>
+          <% else %>
+             <td><span style="color:green"><%= r_sq %></span></td>
+          <% end %>
+
+          <td><%= wa %></td>
+          <td><%= me %></td>
+          <td><%= rmse %></td>
+        </tr>
+  <%  
+
+           end # end if k.index("ad")
+        end
+      } # end ads.sort.each do |ad|
+
+
+      nrs=nrs.collect! {|n| n.to_i}
+      rsqs=r_sqs.collect! {|n| n.to_f}
+      was=was.collect! {|n| n.to_f}
+      mes=mes.collect! {|n| n.to_f}
+      rmses=rmses.collect! {|n| n.to_f}
+  %>
+      <tr>
+          <td><%= @dataset %></td>
+          <td><%= @endpoint %></td>
+          <td><%= @branch %></td>
+          <td>median</td>
+          <td><%= nrs.median %></td>
+          <td><%= rsqs.median %></td>
+          <td><%= was.median %></td>
+          <td><%= mes.median %></td>
+          <td><%= rmses.median %></td>
+      </tr>
+
+      </table>
+<p/>
+
+   <% # gather images
+      @acc_png = @summary_file.sub(/\.summary$/,"_acc.png").sub(/public/,"")
+#      @wa_png = @summary_file.sub(/\.summary$/,"_wa.png").sub(/public/,"")
+      @png = Dir["public/data/#{@dataset}/#{@endpoint}/**/#{@branch}/#{@revision}/*png"]
+#      @roc_png = @summary_file.sub(/\.summary$/,"_roc.png").sub(/public/,"")
+#      @esms_png = @summary_file.sub(/\.summary$/,"_esms.png").sub(/public/,"")
+   %>
+
+      <h4>Figure 1: Predicted vs. database activity for different ADs</h4>
+
+      <table cellpadding="10">
+   <%     pngs = Array.new
+          @png.each do |cur_png|
+            if (cur_png.index('pred_db'))
+              pngs.push(cur_png)
+            end
+          end 
+
+          pc = 0
+          pngs.sort.each do |cur_png|
+            pc += 1
+   %>
+   <%       if (pc%2==1) %>
+      <tr>
+   <%       end %>
+       <td> 
+       AD =
+   <%=      cur_png[cur_png.index(/pred_db/)+7, cur_png.index(/.png/)-(cur_png.index(/pred_db/)+7)] %>
+      <br>
+   <%=      image_tag(cur_png, { :size => "394x450" }).sub(/\/images\/public/,"") %>
+      </td>
+   <%       if (pc%2==0)%>
+      </tr>
+   <%       end
+          end # end if pngs.sort.each do |cur_png|
+   %>
+   <%     if (pngs.size%2==1) %><td>&nbsp;</td>
+
+   <%   end%>
+  
+      </table>
+
+      <h4>Figure 2: Performance measures for regression</h4>
+
+      <%= image_tag @acc_png %><p/>
+
+      <% end # end if @summary
+
+
+     ## extsum  
+
+     
+      if (@extsum)  
+
+	nr_folds = 0
+        @extsum.each do |e|
+          nr_folds += 1
+        end 
+
+	begin 
+        %>
+
+        <!-- Contents -->
+        <ul>
+          <li><a href="#validation">Predictivity</a></li>
+        </ul>
+
+	<hr/>
+
+  		<h3><a name="validation"></a>Testset Results (leave-many-out crossvalidation)</h3>
+
+	<p />
+	Median values of <%= nr_folds %> folds.
+
+	<%@ext_data.each { |a|%>
+
+	<tr>	
+          <td><%= @dataset %></td>
+          <td><%= @endpoint %></td>
+          <td><%= @branch %></td>
+
+          <% (a.to_s.split).each { |b| %>
+          <td><%= b %></td>
+          <%} %>
+
+          </tr>
+        <%}
+
+
+        rescue
+        end
+        %>
+
+  </table>
+    <%  end # end if @extsum
+        %>
+
+  <div class="footnote" style="font-size:8pt"><br>
+  <sup>[<a name="ftn.ad">1</a>]</sup>
+  applicability domain threshold in terms of the given confidence level
+  </div>
+  <div class="footnote" style="font-size:8pt"><br>
+  <sup>[<a name="ftn.nr">2</a>]</sup>
+  number of predictions within the applicability domain
+  </div>
+  <div class="footnote" style="font-size:8pt"><br>
+  <sup>[<a name="ftn.q2">3</a>]</sup>
+  obtained by leave-one-out crossvalidation. Color coding: red (unreliable, very small sample &lt; 12), yellow (unstable, small sample &lt; 30), green (ok, sample size &gt;= 30)
+  </div>
+  <div class="footnote" style="font-size:8pt"><br>
+  <sup>[<a name="ftn.wa">4</a>]</sup>
+  confidence-weighted accuracy with respect to the 1 log unit error margin
+  </div>
+  <div class="footnote" style="font-size:8pt"><br>
+  <sup>[<a name="ftn.me">5</a>]</sup>
+  with 95% confidence interval
+  </div>
+
+
+</div>

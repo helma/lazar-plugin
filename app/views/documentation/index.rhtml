@@ -1,0 +1,17 @@
+<div class="lazar-form">
+
+    <b><%= link_to 'Interpretation:', :action => :help %></b>
+    This page helps to interpret the output of the lazar webinterface.<p/>
+    <!--
+    <b><%= link_to 'FAQ', :action => :faq %></b>
+    Frequently asked questions about the lazar system.<p/>
+    -->
+    <b><%= link_to 'Publications:', 'http://www.in-silico.de/publ.html'%></b>
+    Scientific papers and review articles about <code>lazar</code> and <em>Predictive Toxicology</em> in general.<p/>
+    <b>Source code:</b>
+    <code>lazar</code> source code with API documentation is available  from the <%= link_to 'Subversion', 'http://subversion.tigris.org/' %> repository <code><%= @svn_url %></code> (<a href="http://www.gnu.org/copyleft/gpl.html>">GNU GPL License</a>)
+    
+  <p/>
+  You can send questions about <code>lazar</code> to <%= mail_to "helma@in-silico.de", nil,  :replace_at => "[at]", :encode => "javascript" %>. 
+
+</div>

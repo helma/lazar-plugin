@@ -1,0 +1,30 @@
+<div class='lazar-form'>
+
+  <% form_tag :action => 'prediction'  do %>
+
+  <ol>
+    <li> Draw a chemical structure <%= link_to "(help)", "#{$RAILS_DIR}/plugin_assets/opentox/applets/jme_help" %><p/>
+
+    <%= flash[:notice] %>
+
+
+    <%= render :partial => "jme_form" %>
+    or enter the <%= link_to 'SMILES', "http://www.daylight.com/dayhtml_tutorials/languages/smiles/index.html" %> string <p/>
+    <%= text_field_tag :smiles, params[:smiles], :size => 70 %></li>
+
+    <li>Select a toxic endpoint<p/>
+
+      <% if params[:endpoint_id].blank? %>
+      <%= select_tag :endpoint_id, option_groups_from_collection_for_select(LazarCategory.find(:all), :lazar_modules,:name,:id, :endpoint,nil) %><p/>
+      <% else %>
+      <%= select_tag :endpoint_id, option_groups_from_collection_for_select(LazarCategory.find(:all), :lazar_modules,:name,:id, :endpoint,LazarModule.find(params[:endpoint_id])) %><p/>
+      <% end %>
+
+    </li>
+
+    <li><%= submit_tag "Predict", :onclick => "getsmiles();" %></li>
+  </ol>
+
+  <% end %>
+
+</div>

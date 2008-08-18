@@ -1,0 +1,22 @@
+<div class='lazar-form'>
+
+  <% form_tag('batch_prediction', :multipart => true) do %>
+
+  <ol>
+
+    <li>Upload a file with smiles codes:<p/><%= file_field_tag "file"%></li>
+
+    <li>Select a toxic endpoint<p/>
+    <% if params[:endpoint_id].blank? %>
+    <%= select_tag :endpoint_id, options_from_collection_for_select(@endpoints,:id, :endpoint) %><p/>
+    <% else %>
+    <%= select_tag :endpoint_id, options_from_collection_for_select(@endpoints,:id, :endpoint, LazarModule.find(params[:endpoint_id])) %><p/>
+    <% end %>
+    </li>
+
+    <li><%= submit_tag "Predict" %></li> 
+
+  </ol>
+  <% end %>
+
+</div>

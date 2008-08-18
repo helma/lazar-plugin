@@ -1,0 +1,157 @@
+require 'rexml/streamlistener'
+require 'yaml'
+require 'rubygems'
+require 'rsruby'
+
+def loo2summary(loo,summary_fn,png=nil)
+
+    ad_threshold = 0.025
+
+    tp = 0
+    wtp = 0
+    ad_tp = 0
+
+    tn = 0
+    wtn = 0
+    ad_tn = 0
+
+    fp = 0
+    wfp = 0
+    ad_fp = 0
+
+    fn = 0
+    wfn = 0
+    ad_fn = 0
+
+    weighted_accuracy = 0.0;
+    ad_accuracy = 0.0;
+    accuracy = 0.0;
+
+    misclassifications = []
+    prediction_confidences = []
+    
+    # parse output file
+    puts loo
+
+    summary = File.new(summary_fn, "w+")
+    YAML::load_documents(File.open(loo)) { |p|
+
+        if !( p['prediction'].nil? || p['confidence'].nil? || p['db_activity'].nil?)
+
+            # get primary data
+            id = p['id']
+            db = p['db_activity']
+            pred = p['prediction'].to_i
+            conf = p['confidence'].to_f.abs
+            smile = p['smiles']
+
+            sum = 0.0
+            cnt = 0
+            db.each(' ') { |a|
+                sum += a.to_i
+                cnt += 1
+            }
+            db_act = sum.to_f/cnt
+        
+
+            if (pred == 1 && db_act > 0.5)
+                tp += 1
+                wtp += conf
+                ad_tp += 1 if conf >= ad_threshold
+                prediction_confidences << [id, conf, true]
+            elsif (pred == 0 && db_act < 0.5)
+                tn += 1
+                wtn += conf
+                ad_tn += 1 if conf >= ad_threshold
+                prediction_confidences << [id, conf, true]
+            elsif (pred == 1 && db_act < 0.5)
+                fp += 1
+                wfp += conf
+                ad_fp += 1 if conf > ad_threshold
+                misclassifications << [id, smile, pred, conf, db]
+                prediction_confidences << [id, conf, false]
+            elsif (pred == 0 && db_act > 0.5)
+                fn += 1
+                wfn += conf
+                ad_fn += 1 if conf > ad_threshold
+                misclassifications << [id, smile, pred, conf, db]
+                prediction_confidences << [id, conf, false]
+            end
+
+        end
+    } # end parsing
+
+    if (wtp+wtn+wfp+wfn) > 0
+        weighted_accuracy = (wtp+wtn) / (wtp+wtn+wfp+wfn)
+    end
+    if (ad_tp+ad_tn+ad_fp+ad_fn) > 0
+        ad_accuracy = (ad_tp+ad_tn).to_f / (ad_tp+ad_tn+ad_fp+ad_fn)
+    end
+    if (tp+tn+fp+fn) > 0
+        accuracy = (tp+tn).to_f / (tp+tn+fp+fn)
+    end
+
+    misclassifications.sort! { |x,y| y[3] <=> x[3] }
+    prediction_confidences.sort! { |x,y| y[1] <=> x[1] }
+
+    summary.puts "summary:"
+    summary.puts "    weighted:"
+    summary.puts "        tp: #{wtp}"
+    summary.puts "        tn: #{wtn}"
+    summary.puts "        fp: #{wfp}"
+    summary.puts "        fn: #{wfn}"
+    summary.puts "        accuracy: #{weighted_accuracy}"
+
+    summary.puts "    within_ad:"
+    summary.puts "        tp: #{ad_tp}"
+    summary.puts "        tn: #{ad_tn}"
+    summary.puts "        fp: #{ad_fp}"
+    summary.puts "        fn: #{ad_fn}"
+    summary.puts "        accuracy: #{ad_accuracy}"
+
+    summary.puts "    all:"
+    summary.puts "        tp: #{tp}"
+    summary.puts "        tn: #{tn}"
+    summary.puts "        fp: #{fp}"
+    summary.puts "        fn: #{fn}"
+    summary.puts "        accuracy: #{accuracy}"
+
+    summary.puts "    misclassifications:"
+    misclassifications.each { |m|
+      summary.puts "        - id: '#{m[0]}'"
+      summary.puts "          smiles: '#{m[1]}'"
+      summary.puts "          prediction: #{m[2]}"
+      summary.puts "          confidence: #{m[3]}"
+      m[4].each(' ') { |a|
+        summary.puts "          db_activity: #{a}"
+      }
+    }
+    
+    n = 0
+    true_predictions = 0
+    pl_confs = []
+    pl_cas = []
+    prediction_confidences.each { |p|
+      n += 1
+      true_predictions += 1 if p[2]
+      ca = true_predictions.to_f/n
+      pl_confs << p[1]
+      pl_cas << ca
+    }
+
+    # plot confidence vs wa
+    cmax = 0.0
+    pl_confs.each { |c|
+        cmax=c if c>cmax
+    }
+    r = RSRuby.instance
+    r.png({'filename'=>png, 'width'=>420, 'height'=>480})
+    r.plot({'x'=>pl_confs, 'y'=>pl_cas, 'type'=>'n', 'ylab'=>'Predictive accuracy', 'ylim'=>[0.5,1], 'xlab'=>'Confidence', 'xlim'=>[cmax,3e-03], 'log'=>'x'})
+    r.rect(cmax, 0.5, 0.025, 1, {'col'=>'grey', 'border'=>'NA'})
+    r.lines(pl_confs,pl_cas)
+    r.points(pl_confs,pl_cas)
+    r.text(cmax,0.55,'Applicability domain\n(Confidence > 0.025)', {'pos'=>4})
+    r.dev_off.call
+
+end
+

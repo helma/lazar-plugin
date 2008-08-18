@@ -1,0 +1,24 @@
+<div class="lazar-form">
+
+  <!--
+  <em>
+  We are working on an update. For this reason validation results are currently not available.
+  </em>
+  -->
+  <% @categories.each do |cat| %>
+
+    <h2><%= cat.name %></h2>
+
+    <ul>
+
+      <% cat.lazar_modules.each do |m| %>
+
+        <li> <%= link_to m.endpoint, :action => :show, :id => m.id %> </li>
+
+      <% end %>
+
+    </ul>
+
+  <% end %>
+
+</div>

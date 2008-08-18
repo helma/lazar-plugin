@@ -1,0 +1,27 @@
+<div class="lazar-prediction">
+  <h1>Weighted accuracies (LOO)</h1>
+  <table>
+    <% @databases.each do |d| %>
+      <tr>
+        <th><%= d %></th>
+        <% @versions.each do |v| %>
+          <th><%= v.sub(/branches/,'') %></th>
+        <% end %>
+      </tr>
+      <% @endpoints[d].each do |e| %>
+        <% if @weighted_accuracies[e] %>
+          <tr>
+            <td><%= link_to File.basename(e), :action => :show, :endpoint => e %></td>
+            <% @versions.each do |v| %>
+              <td>
+              <%= @max[e][v] ? "<b>" : "" %>
+                <%= link_to sprintf("%0.2f",@weighted_accuracies[e][v]), :action => :show, :endpoint => e, :version => v if @weighted_accuracies[e][v] %>
+              <%= @max[e][v] ? "</b>" : "" %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      <% end %>
+    <% end %>
+  </table>
+</div> 

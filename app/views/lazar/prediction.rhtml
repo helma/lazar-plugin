@@ -1,0 +1,77 @@
+<div class='lazar-prediction'>
+
+  <!--
+<em>
+This is a beta version of the new lazar webinterface. Please report bugs and unexpected behaviour to <%= mail_to "helma@in-silico.de",  nil, :replace_at => "[at]", :encode => "javascript" %>.
+</em>
+-->
+
+  <% if @lazar %>
+
+  <table>
+
+    <tr><th colspan='5'><%= @module.lazar_category.name %> - <%=  @module.endpoint %> [<%= link_to "Validation and endpoint definition", :controller => :validation, :action => :show, :id => @module.id %>]</th></tr>
+
+    <tr>
+      <th>Predicted Activity (Confidence)</th>
+      <th>Structure</th>
+      <th>Measured Activity</th>
+      <th>Additional Information</th>
+      <th>SMILES<br/>InChI</th>
+    </tr>
+    
+    <tr>
+        <td <%= @lazar.conf_colorcode(@module.applicability_domain) %>>
+        <%= translate_activity(@lazar.prediction, @module.unit) %> (<%= @lazar.confidence %>)
+        <%= @lazar.unreliable_explanation(@module.applicability_domain) %>
+      </td>
+      <td class="sim100"><%= display_smiles_with_fragments(@lazar.smiles,@lazar.activating_fragments,@lazar.deactivating_fragments,@lazar.activating_p,@lazar.deactivating_p,@lazar.unknown_fragments) %></td>
+      <td <%= @lazar.db_activity_class %>><%= translate_activity(@lazar.db_activity, @module.unit) %> <%= @lazar.prediction_quality %></td>
+      
+      <td class="sim100">
+        <%= link_to "Relevant&nbsp;Fragments", :action => :fragments, :endpoint_id => params[:endpoint_id]  %><br/>
+        <% escaped_inchi = CGI.escape(@lazar.inchi)%>
+        <%= link_to "DSSTox&nbsp;database", "http://www.epa.gov/dsstox_structurebrowser/?qtype=inchi&qval=#{escaped_inchi}", :confirm => 'You are sending structural information (InChI) of this compound to the Internet. Do you want to proceed?' %><br/>
+        <%= link_to "PubChem&nbsp;database", h("http://www.ncbi.nlm.nih.gov/sites/entrez?cmd=PureSearch&db=pccompound&term=\"#{escaped_inchi}\""), :confirm => 'You are sending structural information (InChI) of this compound to the Internet. Do you want to proceed?' %><br/>
+      </td>
+      <td class="sim100"><%= @lazar.smiles %><br/>
+      <%= @lazar.inchi %></td>
+    </tr>
+
+    <% if @lazar.neighbors %>
+    <tr><th colspan='5'>Similar Structures (<%= @lazar.neighbors.size > 10 ? 10 : @lazar.neighbors.size %> from <%= @lazar.neighbors.size %> Neighbors)
+      <% if @lazar.med_ndist %>, with <%= sprintf("%.2f", @lazar.med_ndist[0]) %> (<%= sprintf("%.2f", @lazar.std_ndist[0]) %>) medium (standard deviation of) distance(s) in feature space<% end %> </th></tr>
+    <tr>
+      <th>Similarity</th>
+      <th>Structure</th>
+      <th>Measured Activity</th>
+      <th>Additional Information</th>
+      <th>SMILES<br/>InChI</th>
+    </tr>
+    <% unless @lazar.neighbors.blank? %>
+    <% @lazar.neighbors[0..10].each do |n| %>
+    <% simclass = 'sim' + (10*(10*n['similarity'].to_f).round).to_s %>
+    <tr>
+      <td class="<%= simclass %>"><%= sprintf("%0.2f",n['similarity']) %></td>
+      <td><%= display_smiles(n['smiles']) %></td>
+      <% act = @lazar.neighbor_activity(n) %>
+      <td class="<%= act['class'] %>">
+      <%= act['activity'] %>
+      <%= @module.unit %>
+      </td>
+      <% escaped_inchi = CGI.escape(n['inchi'])%>
+      <td class="<%= simclass %>">
+        <%= link_to "Original&nbsp;data&nbsp;(DSSTox)", "http://www.epa.gov/dsstox_structurebrowser/?qtype=inchi&qval=#{escaped_inchi}" %><br/>
+        <%= link_to "PubChem&nbsp;database", h("http://www.ncbi.nlm.nih.gov/sites/entrez?cmd=PureSearch&db=pccompound&term=\"#{n['inchi']}\"") %><br/>
+      </td>
+      <td class="<%= simclass %>"><%= n['smiles'] %><br/><%= n['inchi'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+    <% end %>
+  </table>
+
+  <% else %>
+    <div class="notice"><%= flash[:notice] %></div>
+  <% end %>
+</div>

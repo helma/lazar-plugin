@@ -1,0 +1,440 @@
+.lazar-form
+  %h2
+    = @module.lazar_category.name
+    \-
+    = @module.endpoint
+  %ul
+    %li
+      %a{ :href => "#endpoint" }
+        Endpoint Definition
+    %li
+      %a{ :href => "#algorithm" }
+        Algorithm
+    %li
+      %a{ :href => "#ad" }
+        Applicability Domain
+    %li
+      %a{ :href => "#validation" }
+        Predictivity
+    %li
+      %a{ :href => "#interpretation" }
+        Mechanistic Interpretation
+  %h3
+    %a{ :name => "endpoint" }/
+    Endpoint Definition
+  = @module.endpoint_definition unless @module.endpoint_definition.blank?
+  - unless @module.endpoint_definition_url.blank?
+    [
+    = link_to "Details", @module.endpoint_definition_url
+    ]
+
+  - unless @module.source_url.blank?
+    [
+    = link_to "Original data", @module.source_url
+    ]
+
+  %h3
+    %a{ :name => "algorithm" }/
+    Algorithm Definition
+  %code
+    lazar
+  obtains predictions from the experimental results of compounds with similar structures (
+  %em
+    neighbors
+  ). For differentiated predictions chemical similarities are always determined
+  %em
+    in respect to the endpoint under investigation
+  \. A detailled description and formal definition of the
+  %code
+    lazar
+  algorithm has been published in:
+  %ul
+    %li
+      C. Helma: Lazy Structure-Activity Relationships (lazar) for the Prediction of Rodent Carcinogenicity and Salmonella Mutagenicity, Molecular Diversity 10, 147-158 (2006) [
+      %a{ :href => "http://www.in-silico.de/articles/modi020905.pdf" }
+        preprint
+      ]
+  The present version of
+  %code
+    lazar
+  uses a slightly modified definition for chemical similarity that uses a) a gaussian distribution function and b) considers the presence of fragments that cannot be evaluated for statistical reasons (i.e. because they are too infrequent in the database). The definition for chemical similarity (Equation 1) is now
+  %p/
+  = image_tag "/plugin_assets/lazar/images/similarity.png"
+  %p/
+  You can donwload the  source code for this
+  %code
+    lazar
+  version (
+  = link_to "GNU General Public License", "http://www.gnu.org/licenses/gpl.html"
+  ) with
+  = link_to 'subversion', 'http://subversion.tigris.org/'
+  \:
+  %br/
+  %code
+    svn co
+    = @svn_url
+    \-r
+    = @version
+  %p/
+  %h3
+    %a{ :name => "ad" }/
+    Applicability Domain Definition
+  The applicability domain (AD) of the training set is characterized by the confidence index of a prediction (high confidence index: close to the applicability domain of the training set/reliable prediction, low confidence: far from the applicability domain of the trainingset/unreliable prediction). The confidence index considers (i) the similarity and number of neighbors and (ii) contradictory examples within the neighbors. A formal definition can be found in:
+  %ul
+    %li
+      C. Helma: Lazy Structure-Activity Relationships (lazar) for the Prediction of Rodent Carcinogenicity and Salmonella Mutagenicity, Molecular Diversity 10, 147-158 (2006) [
+      %a{ :href => "http://www.in-silico.de/articles/modi020905.pdf" }
+        preprint
+      ]
+  The reliability of predictions decreases gradually with increasing distance from the applicability domain (i.e. decreasing confidence index).
+  %a{ :href => "#image" }
+    Figure 1
+  shows this dependency visually,
+  %a{ :href => "#weighted_predictions" }
+    Table 1
+  weights true/false predictions with their confidence and provides the best indication of the overall performance of the system.
+  %p/
+  For simplicity we provide also results for an applicability domain definition with a sharp border at a confidence index of
+  = @conf_limit
+  \. These results are summarized in
+  %a{ :href => "#ad_predictions" }
+    Table 2
+  , indicated by the grey area in
+  %a{ :href => "#image" }
+    Figure 1
+  and in the ROC curve in
+  %a{ :href => "#roc" }
+    Figure 2.
+  \. Misclassifications within the applicability domain are summarized in the
+  = link_to "table of misclassifications", :action => :misclassifications, :id => params[:id]
+  \.
+  %p/
+  The presence of substructures that are unknown to the training set (
+  %em
+    unknown fragments
+  ) is another factor that limits the applicability domain. As the training data cannot provide any information about unknown fragments, their relevance has to be evaluated by an expert user (as a rule of thumb large fragments are of less concern, because all shorter subfragments have been evaluated by the system). For this reason the presence/absence of unknown fragments is not considered in the formal applicability domain definition, but their presence is indicated in the
+  = link_to "table of misclassifications", :action => :misclassifications, :id => params[:id]
+  \.
+  %h3
+    %a{ :name => "validation" }/
+    Validation Results (leave-one-out crossvalidation)
+  Definition and experimental comparison with external validation procedures:
+  %ul
+    %li
+      R. Benigni, T. I. Netzeva, E. Benfenati, C. Bossa andR. Franke, C. Helma, E. Hulzebos, C. Marchant, A. Richard, Y.-T. Woo, and C. Yang. The expanding role of predictive toxicology: an update on the (Q)SAR models for mutagens and carcinogens. J Environ Sci Health C Environ Carcinog Ecotoxicol Rev., 25:53-97, 2007.
+    %li
+      C. Helma: Lazy Structure-Activity Relationships (lazar) for the Prediction of Rodent Carcinogenicity and Salmonella Mutagenicity, Molecular Diversity 10, 147-158 (2006) [
+      %a{ :href => "http://www.in-silico.de/articles/modi020905.pdf" }
+        preprint
+      ]
+    %li
+      C. Helma and J. Kazius: Artificial Intelligence and Data Mining for Toxicity Prediction, Current Computer-Aided Drug Design 2, 1-19 (2006) [
+      %a{ :href => "http://www.in-silico.de/articles/helma_kazius_ccadd.pdf" }
+        preprint
+      ]
+    %li
+      Presentation at Workshop on Evaluating Prediction Models in Mutagenicity and Carcinogenicity, Rome, Italy (2006) [
+      %a{ :href => "http://www.in-silico.de/articles/helma_rome06.pdf" }
+        presentation
+      ]
+  %h4
+    %a{ :name => "weighted_predictions" }
+      Table 1: Predictions weighted by confidence index
+  %table
+    %tr
+      %th
+        True positive predictions
+      %td
+        tp
+      %td
+        = sprintf("%0.2f",@summary[:weighted][:tp].to_f)
+    %tr
+      %th
+        True negative predictions
+      %td
+        tn
+      %td
+        = sprintf("%0.2f",@summary[:weighted][:tn].to_f)
+    %tr
+      %th
+        False positive predictions
+      %td
+        fp
+      %td
+        = sprintf("%0.2f",@summary[:weighted][:fp].to_f)
+    %tr
+      %th
+        False negative predictions
+      %td
+        fn
+      %td
+        = sprintf("%0.2f",@summary[:weighted][:fn].to_f)
+    %tr
+      %th
+        Sensitivity (true positive rate)
+      %td
+        tp/(tp+fn)
+      %td
+        = (100*@summary[:weighted][:tp].to_f/(@summary[:weighted][:tp].to_f+@summary[:weighted][:fn].to_f)).round/100.00
+    %tr
+      %th
+        Specificity (true negative rate)
+      %td
+        tn/(tn+fp)
+      %td
+        = (100*@summary[:weighted][:tn].to_f/(@summary[:weighted][:tn].to_f+@summary[:weighted][:fp].to_f).to_f).round/100.00
+    %tr
+      %th
+        Positive predictivity
+      %td
+        tp/(tp+fp)
+      %td
+        = (100*@summary[:weighted][:tp].to_f/(@summary[:weighted][:tp].to_f+@summary[:weighted][:fp].to_f).to_f).round/100.00
+    %tr
+      %th
+        Negative predictivity
+      %td
+        tn/(tn+fn)
+      %td
+        = (100*@summary[:weighted][:tn].to_f/(@summary[:weighted][:tn].to_f+@summary[:weighted][:fn].to_f).to_f).round/100.00
+    %tr
+      %th
+        False positive rate
+      %td
+        fp/(tp+fn)
+      %td
+        = (100*@summary[:weighted][:fp].to_f/(@summary[:weighted][:tp].to_f+@summary[:weighted][:fn].to_f).to_f).round/100.00
+    %tr
+      %th
+        False negative rate
+      %td
+        fn/(tn+fp)
+      %td
+        = (100*@summary[:weighted][:fn].to_f/(@summary[:weighted][:tn].to_f+@summary[:weighted][:fp].to_f).to_f).round/100.00
+    %tr
+      %th
+        Accuracy (concordance)
+      %td
+        (tp+tn)/(tp+fp+tn+fn)
+      %th
+        = (100*(@summary[:weighted][:tp].to_f+@summary[:weighted][:tn].to_f)/(@summary[:weighted][:tp].to_f+@summary[:weighted][:tn].to_f+@summary[:weighted][:fn].to_f+@summary[:weighted][:fp].to_f).to_f).round/100.00
+  %p/
+  Best indication of the overall performance (see
+  %a{ :href => "#ad" }
+    Applicability Domain Definition
+  )
+  %p/
+  %h4
+    %a{ :name => "ad_prediction" }
+      Table 2: Predictions within applicability domain
+  %table
+    %tr
+      %th
+        True positive predictions
+      %td
+        tp
+      %td
+        = @summary[:within_ad][:tp].to_i
+    %tr
+      %th
+        True negative predictions
+      %td
+        tn
+      %td
+        = @summary[:within_ad][:tn].to_i
+    %tr
+      %th
+        False positive predictions
+      %td
+        fp
+      %td
+        = @summary[:within_ad][:fp].to_i
+    %tr
+      %th
+        False negative predictions
+      %td
+        fn
+      %td
+        = @summary[:within_ad][:fn].to_i
+    %tr
+      %th
+        Sensitivity (true positive rate)
+      %td
+        tp/(tp+fn)
+      %td
+        = (100*@summary[:within_ad][:tp].to_i/(@summary[:within_ad][:tp].to_i+@summary[:within_ad][:fn].to_i).to_f).round/100.00
+    %tr
+      %th
+        Specificity (true negative rate)
+      %td
+        tn/(tn+fp)
+      %td
+        = (100*@summary[:within_ad][:tn].to_i/(@summary[:within_ad][:tn].to_i+@summary[:within_ad][:fp].to_i).to_f).round/100.00
+    %tr
+      %th
+        Positive predictivity
+      %td
+        tp/(tp+fp)
+      %td
+        = (100*@summary[:within_ad][:tp].to_i/(@summary[:within_ad][:tp].to_i+@summary[:within_ad][:fp].to_i).to_f).round/100.00
+    %tr
+      %th
+        Negative predictivity
+      %td
+        tn/(tn+fn)
+      %td
+        = (100*@summary[:within_ad][:tn].to_i/(@summary[:within_ad][:tn].to_i+@summary[:within_ad][:fn].to_i).to_f).round/100.00
+    %tr
+      %th
+        False positive rate
+      %td
+        fp/(tp+fn)
+      %td
+        = (100*@summary[:within_ad][:fp].to_i/(@summary[:within_ad][:tp].to_i+@summary[:within_ad][:fn].to_i).to_f).round/100.00
+    %tr
+      %th
+        False negative rate
+      %td
+        fn/(tn+fp)
+      %td
+        = (100*@summary[:within_ad][:fn].to_i/(@summary[:within_ad][:tn].to_i+@summary[:within_ad][:fp].to_i).to_f).round/100.00
+    %tr
+      %th
+        Accuracy (concordance)
+      %td
+        (tp+tn)/(tp+fp+tn+fn)
+      %th
+        = (100*(@summary[:within_ad][:tp].to_i+@summary[:within_ad][:tn].to_i)/(@summary[:within_ad][:tp].to_i+@summary[:within_ad][:tn].to_i+@summary[:within_ad][:fn].to_i+@summary[:within_ad][:fp].to_i).to_f).round/100.00
+  %p/
+  Predictions with a confidence >
+  = @conf_limit
+  are considered to be within the applicability domain (see
+  %a{ :href => "#ad" }
+    Applicability Domain Definition
+  )
+  %p/
+  %h4
+    Table 3: All predictions
+  %table
+    %tr
+      %th
+        True positive predictions
+      %td
+        tp
+      %td
+        = @summary[:all][:tp].to_i
+    %tr
+      %th
+        True negative predictions
+      %td
+        tn
+      %td
+        = @summary[:all][:tn].to_i
+    %tr
+      %th
+        False positive predictions
+      %td
+        fp
+      %td
+        = @summary[:all][:fp].to_i
+    %tr
+      %th
+        False negative predictions
+      %td
+        fn
+      %td
+        = @summary[:all][:fn].to_i
+    %tr
+      %th
+        Sensitivity (true positive rate)
+      %td
+        tp/(tp+fn)
+      %td
+        = (100*@summary[:all][:tp].to_i/(@summary[:all][:tp].to_i+@summary[:all][:fn].to_i).to_f).round/100.00
+    %tr
+      %th
+        Specificity (true negative rate)
+      %td
+        tn/(tn+fp)
+      %td
+        = (100*@summary[:all][:tn].to_i/(@summary[:all][:tn].to_i+@summary[:all][:fp].to_i).to_f).round/100.00
+    %tr
+      %th
+        Positive predictivity
+      %td
+        tp/(tp+fp)
+      %td
+        = (100*@summary[:all][:tp].to_i/(@summary[:all][:tp].to_i+@summary[:all][:fp].to_i).to_f).round/100.00
+    %tr
+      %th
+        Negative predictivity
+      %td
+        tn/(tn+fn)
+      %td
+        = (100*@summary[:all][:tn].to_i/(@summary[:all][:tn].to_i+@summary[:all][:fn].to_i).to_f).round/100.00
+    %tr
+      %th
+        False positive rate
+      %td
+        fp/(tp+fn)
+      %td
+        = (100*@summary[:all][:fp].to_i/(@summary[:all][:tp].to_i+@summary[:all][:fn].to_i).to_f).round/100.00
+    %tr
+      %th
+        False negative rate
+      %td
+        fn/(tn+fp)
+      %td
+        = (100*@summary[:all][:fn].to_i/(@summary[:all][:tn].to_i+@summary[:all][:fp].to_i).to_f).round/100.00
+    %tr
+      %th
+        Accuracy (concordance)
+      %td
+        (tp+tn)/(tp+fp+tn+fn)
+      %th
+        = (100*(@summary[:all][:tp].to_i+@summary[:all][:tn].to_i)/(@summary[:all][:tp].to_i+@summary[:all][:tn].to_i+@summary[:all][:fn].to_i+@summary[:all][:fp].to_i).to_f).round/100.00
+  %p/
+  Poor indication of the overall performance. Depends predominatly on the fraction of compounds beyond the applicability domain, which are by definition poorly predictable (see
+  %a{ :href => "#ad" }
+    Applicability Domain Definition
+  )
+  %p/
+  %h4
+    %a{ :name => "image" }
+      Figure 1: Cumulative accuracy vs. prediction confidence
+  = image_tag @cumulative_accuracy_file
+  %p/
+  Depicts the dependency of predictive accuracy on the confidence index (i.e. the distance to the applicability domain, see
+  %a{ :href => "#ad" }
+    Applicability Domain Definition
+  ). Fluctuations at the left hand side of the figure are statistical artefacts (small sample sizes) and therefore irrelevant.
+  %br/
+  %h4
+    %a{ :name => "roc" }
+      Figure 2: Receiver operating characteristic (
+      = link_to "ROC", "http://en.wikipedia.org/wiki/Receiver_operating_characteristic"
+      )
+  = image_tag @roc_file
+  %p/
+  Depicts true versus false positive rates. An optimal model would reside in the top left corner, random guessing would lead to point near the diagonal line.
+  %p/
+  The
+  = link_to "table of misclassifications", :action => :misclassifications, :id => params[:id]
+  shows all misclassified instances within the applicability domain.
+  %p/
+  %h3
+    %a{ :name => "interpretation" }
+      Mechanistic Interpretation
+  %h4
+    Neighbors
+  %em
+    Neighbors
+  are compounds that are similar in respect to
+  = @module.endpoint.downcase
+  \. It is likely that compounds with high similarity act by similar mechanisms as the query compound. You can retrieve additional experimental data and literature citations for the neighbors and the query structure by following the "Search PubChem" links on the prediction page.
+  %h4
+    Fragments
+  Activating and deactivating parts of the query compound are highlighted in red and green. Fragments that are unknown (or too infrequent for statistical evaluation are marked in yellow. You can retrieve additional statistical information about the individual fragments by following the "Relevant Fragments" link. Please note that
+  %code
+    lazar
+  predictions are based on neighbors and not on fragments. Fragments and their statistical significance are used for the calculation of activity specific similarities.

@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+	<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>lazar (Lazy Structure Activity Relationships)</title>
+    <%= javascript_include_tag :defaults %>
+		<%= active_scaffold_includes %>
+    <%= stylesheet_link_tag 'style', :plugin => "opentox" %>
+	</head>
+
+	<body>
+
+    <div id='logo'>
+      <h1>Lazar Toxicity Predictions</h1>
+    </div>
+
+    <div id='nav'>
+      <ul>
+
+        <li<%= controller.action_name == 'input' ? " id='sel'" : "" %>> <%=link_to 'Input', :controller => 'lazar', :action => 'input', :endpoint_id => params[:endpoint_id], :smiles => params[:smiles] %> </li>
+
+        <li<%= controller.controller_name == 'validation' ? " id='sel'" : "" %>>
+        <%# if controller.action_name == 'predict' %>
+        <%#= link_to 'Validation', :action => 'validation', :endpoint_id => params[:endpoint_id] %>
+        <%# else %>
+        <%= link_to 'Validation', :controller => :validation, :action => :index %>
+        <%# end %>
+        </li>
+
+        <li<%= controller.controller_name == 'documentation' ? " id='sel'" : "" %>>
+        <%= link_to 'Documentation', :controller => :documentation, :action => :index%>
+        </li>
+      </ul>
+      <hr/>
+    </div>
+
+    <%= @content_for_layout %>
+
+
+    <div class="acknowledgement">
+
+      &copy; <a href="http://www.in-silico.de/">in silico toxicology</a> 2004-2008 <br/>
+      Built with: <%= link_to 'lazar', :action => 'index' %>, <%= link_to "OpenBabel", "http://openbabel.sf.net/" %>, <%= link_to "CDK", "http://cdk.sf.net/" %>, <%= link_to "Ruby on Rails", "http://www.rubyonrails.org/" %><br/>
+      <a href="http://www.molinspiration.com/jme/index.html">JME Editor</a> courtesy of Peter Ertl, Novartis <br/>
+                                                                                        </div>
+
+	</body>
+
+</html>

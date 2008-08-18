@@ -1,0 +1,217 @@
+require 'yaml'
+require 'rubygems'
+require 'statarray'
+require 'rsruby'
+
+def minus (a);
+    b = [] ; a.each { |s| b << s*(-1.0) } ; b ; 
+end
+
+def square (a);
+    b = [] ; a.each { |s| b << s*s } ; b ; 
+end
+
+def GetW1l (errors);
+    w1lc=0
+    errors.each { |id, e| 
+        if (e <= 1.0 ) 
+            w1lc = w1lc+1 
+        end 
+    }
+    w1lc.to_s
+    ;
+end
+
+def GetWa (errors, confs)
+    tp=0.0
+    p=0.0
+    errors.each { |id,e|
+        if ( e<=1.0 ) 
+            tp = tp + confs[id]
+        end
+        p = p + confs[id]
+    }
+    if (p>0) 
+        wa = (tp/p).to_s
+    end
+    wa = sprintf("%.3f", (tp/p)).to_s
+    ;
+end
+
+def AdStat(dbs, preds, confs, errors, dbs_out, preds_out, summary, pred_db_png=nil);
+
+    d=minus(dbs.values)
+    d_out=minus(dbs_out.values)
+    p=minus(preds.values)
+    p_out=minus(preds_out.values)
+
+    e = StatArray::StatArray.new(errors.values)
+    se = StatArray::StatArray.new(square(errors.values))
+    summary.puts "  nr_w1l: \"" + GetW1l(errors) + "\""
+    summary.puts "  wa: \"" + GetWa(errors, confs) + "\""
+    summary.puts "  me: \"" + sprintf("%.3f", e.mean.to_s) + "\""
+    summary.puts "  ci: \"" + sprintf("%.3f", (e.ci[0] - e.ci[1]).abs) + "\""
+    summary.puts "  se: \"" + sprintf("%.3f", e.stddev.to_s) + "\""
+    summary.puts "  rmse: \"" + sprintf("%.3f", (se.mean ** 0.5)) + "\""
+    summary.puts "  rsq: \"" + sprintf("%.3f", (1.0-se.mean/dbs.values.variance)) + "\"";
+
+    if pred_db_png
+        # plot predicted vs database activity
+        r = RSRuby.instance
+        rng = r.range(p)
+        rnx = [rng[0]-2.0, rng[1]+2.0]
+        rny = [rng[0]-2.0, rng[1]+2.0]
+        r.png({'filename'=>pred_db_png, 'width'=>630, 'height'=>720})
+        r.plot({'x' => p, 'y' => d, 'xlab' => 'Prediction (-log)', 'ylab' => 'Database activity (-log)', 'cex.axis' => '1.5', 'cex.lab' => '1.5', 'type' => 'n', 'ylim' => rny, 'xlim' => rnx })
+        r.par('cex.main'=>1.5)
+        r.title({'main'=>'Prediction vs Database activity'})
+        r.lines([-100,100], [-100,100])
+        r.lines([-99,100], [-100,99])
+        r.lines([-100,99], [-99,100])
+        r.points( p_out, d_out, {'pch'=>17, 'cex'=>1.0, 'col'=>'#CCCCCC'})
+        r.points( p, d, {'pch'=>17, 'cex'=>1.0, 'col'=>'#000000'})
+        r.dev_off.call
+    end
+
+    ;
+end
+
+def AdData(ad, dbs, preds, confs, errors, summary, pred_db_png=nil);
+    dbs_w = {}
+    preds_w = {}
+    confs_w = {}
+    errors_w = {}
+    dbs_o = {}
+    preds_o = {}
+    confs.each { |id,conf|
+        if (conf >= ad)
+            dbs_w[id] = dbs[id]
+            preds_w[id] = preds[id]
+            confs_w[id] = conf
+            errors_w[id] = errors[id]
+        else
+            dbs_o[id] = dbs[id]
+            preds_o[id] = preds[id]
+        end
+    }
+    summary.puts "- ad: \"" + ad.to_s + "\""
+    summary.puts "  nr: \"" + confs_w.size.to_s + "\""
+    if pred_db_png
+        pdp = pred_db_png + sprintf("%.3f", ad) + '.png'
+    else 
+        pdp = nil
+    end
+    AdStat(dbs_w, preds_w, confs_w, errors_w, dbs_o, preds_o, summary, pdp)
+    summary.puts
+    ;
+
+end
+
+def ca(dbs, preds, confs, smiles, errors, nr_n, summary, acc_png=nil);
+    se = []
+    db = []
+    er = {}
+    cf = {}
+    rsqs = []
+    cfs = []
+    (confs.sort {|a,b| a[1]<=>b[1]}).reverse!.each { |id, conf|
+        se << (errors[id]*errors[id])
+        db << dbs[id]
+        cf[id] = conf
+        er[id] = errors[id]
+
+        rsq = sprintf("%.3f", (1.0-se.mean/db.variance))
+        wa = GetWa(er, cf)
+
+        rsqs << rsq
+        cfs << conf
+
+        summary.puts "    - id: \"" + id.to_s + "\""
+        summary.puts "      smiles: \"" + smiles[id] + "\""
+        summary.puts "      db_activity: \"" + dbs[id].to_s + "\""
+        summary.puts "      prediction: \"" + preds[id].to_s + "\""
+        summary.puts "      confidence: \"" + conf.to_s + "\""
+        summary.puts "      error: \"" + errors[id].to_s + "\""
+        summary.puts "      nr_n: \"" + nr_n[id].to_s + "\""
+        summary.puts "      rsq: \"" + rsq + "\""
+        summary.puts "      wa: \"" + wa + "\""
+        summary.puts
+    }
+
+    if acc_png
+
+        # plot conf vs rsq
+        r = RSRuby.instance
+        cfs=minus(cfs)
+        r.png({'filename'=>acc_png, 'width'=>630, 'height'=>720})
+        r.plot({'x' => cfs, 'y' => rsqs, 'xlab' => '-conf', 'ylab' => 'r-sq', 'cex.lab' => '1.5', 'type' => 'n', 'ylim' => [0,1], 'axes' => 'F'})
+        r.axis(1, {'at'=>r.pretty(cfs), 'labels'=>r.pretty(cfs), 'cex.axis' => 1.5})
+        r.axis(2, {'cex.axis' => 1.5})
+        r.par({'cex.main' => 1.5})
+        r.title({'main'=>'Confidence vs squared multiple correlation coefficient'})
+        r.points(cfs, rsqs, {'pch'=>21, 'cex'=>1.0})
+        r.lines(cfs, rsqs, {'pch'=>21, 'cex'=>1.0})
+        r.dev_off.call
+
+    end
+
+;
+end
+
+def loo2summary_r(loo, summary_fn, ads, pred_db_png=nil, acc_png=nil);
+
+
+    summary = File.new(summary_fn, "w+")
+
+    # variables
+    dbs = {}
+    preds = {}
+    confs = {}
+    smiles = {}
+    errors = {}
+    nr_n = {}
+
+    # parse output file
+    yaml = File.open(loo)
+    tree = YAML::load_documents(yaml) { |p|
+
+        #if !( p['prediction'].nil? || p['confidence'].nil? || p['db_activity'].nil? )
+        if !( p['prediction'].nil? || p['confidence'].nil? )
+
+            # get primary data
+            id = p['id']
+            db_arr = p['db_activity']
+            db_statarr = db_arr.to_statarray
+            db = sprintf("%.3f", db_statarr.median).to_f
+            pred = sprintf("%.3f", p['prediction']).to_f 
+            conf = p['confidence']
+            smile = p['smiles']
+            error = sprintf("%.3f", (db-pred).abs).to_f
+
+            # store data in hashes
+            dbs[id] = db
+            preds[id] = pred
+            confs[id] = conf
+            smiles[id] = smile
+            errors[id] = error
+
+            # get neighbor data
+            neighbors = p['neighbors']
+            nr_n[id] = neighbors.size
+            
+        end
+    } # end parsing
+
+    
+    # summary for different confidence thresholds
+    ads.each { |ad|
+        AdData(ad.to_f, dbs, preds, confs, errors, summary, pred_db_png)
+    }
+
+    # cumulative accuracies
+    summary.puts "- cumulative_accuracies:"
+    summary.puts
+    ca(dbs, preds, confs, smiles, errors, nr_n, summary, acc_png)
+    
+    ;
+end

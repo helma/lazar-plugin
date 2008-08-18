@@ -1,0 +1,27 @@
+<div class='lazar-form'>
+
+  <h1> <%= params[:endpoint] %> </h1>
+  <% ["weighted","within_ad","all"].each do |t| %>
+    <% @type = t %>
+    <%= render :partial => "table", :locals => {:type => t } %>
+  <% end %>
+
+  <table>
+    <tr>
+      <% @versions.each do |v| %>
+        <th><%= v if @images[v] %></th>
+      <% end %>
+    </tr>
+    <tr>
+      <% @versions.each do |v| %>
+        <td><%= image_tag @images[v] if @images[v] %></td>
+      <% end %>
+    </tr>
+    <tr>
+      <% @versions.each do |v| %>
+        <td><%= link_to "Misclassifications", :action => :misclassifications, :endpoint => params[:endpoint], :version => v if @images[v] %></td>
+      <% end %>
+    </tr>
+  </table>
+
+</div>

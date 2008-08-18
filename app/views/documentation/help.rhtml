@@ -1,0 +1,87 @@
+<div class='lazar-form'>
+
+  <h1 class="c1">Interpretation of <code>lazar</code> predictions</h1>
+  <table>
+    <tr>
+      <td><strong>Important:</strong> <em>Do not trust these
+      predictions blindly!</em> Please evaluate each
+      prediction carefully in light of your own toxicological
+      knowledge. <code>lazar</code> is not a substitute for
+      human experts, but a tool to assist human experts.</td>
+    </tr>
+  </table>
+
+  <h2>General principle</h2>
+
+  <p><code>lazar</code> derives its predictions from
+  databases with experimentally determined toxicity data. To
+  make a prediction for a new structure <code>lazar</code>
+  searches in one of these databases for compounds with similar
+  structures (<em>neighbors</em>) and calculates the
+  prediction from their measured activities.
+  The most important feature of <code>lazar</code> is, that
+  chemical similarities are always determined <em>in respect to a
+  given toxic activity</em>.</p>
+
+   A detailled description and formal definition of the <code>lazar</code> algorithm has been published in:
+<ul>
+  <li> C. Helma: Lazy Structure-Activity Relationships (lazar) for the Prediction of Rodent Carcinogenicity and Salmonella Mutagenicity, Molecular Diversity 10, 147-158 (2006) [<a href="http://www.in-silico.de/articles/modi020905.pdf">preprint</a>]</li>
+</ul>
+
+The <code>lazar</code> source code is available  from the <%= link_to 'Subversion', 'http://subversion.tigris.org/' %> repository <code>svn+ssh://pdp8.in-silico.de/var/local/svn-pub/lazar/trunk</code> (<a href="http://www.gnu.org/copyleft/gpl.html>">GNU GPL License</a>)
+
+    <p>The <code>lazar</code> webinterface tries to expose all
+    information that has been used for a prediction, the exact
+    meanings of the individual entries are described below.</p>
+
+    <h2><code>lazar</code> results</h2>
+
+    <h3><a name="prediction"></a>Prediction</h3>
+
+    The prediction for the selected compound and endpoint is displayed in the first row of the table with the following columns:
+
+      <h4>Predicted Activity (Confidence)</h4>
+      <code>lazar</code> prediction (active: red, inactive: green) with <%= link_to 'confidence index', "#ci" %>. Predictions are labelled as <em>unreliable</em> (yellow) if 
+        <ul>
+          <li>a compounds has very infrequent or unknown substructures </li>
+          <li>the confidence index is lower than 0.025</li>
+        </ul>
+
+      <h4>Structure</h4>
+      2D representation of the query structure. Activating (red), deactivating (green) and unknown/infrequent (yellow) substructures are highlighted. <em>NOTE: 2D rendering and substructure highlighting does not work correctly in all cases!</em>
+
+      <h4>Measured Activity</h4>
+      If an identical structure has been found in the training set, predictions are made <em>without</em> any information from the query structure and the database activity is displayed here. 
+
+      <h4>Additional Information</h4>
+      
+        <b>Relevant Fragments</b>
+        Display statistically significant and unknown/infrequent fragments for the current prediction.<br/>
+        <b>Search Pubchem</b>
+        Retrieve additional information for the query structure from the <%= link_to 'PubChem','http://pubchem.ncbi.nlm.nih.gov/' %> database. <em>PubChem will display an error message, if the current structure is not found!</em><br/>
+    
+      <h4>SMILES/InChi</h4>
+      <%= link_to 'SMILES', "http://www.daylight.com/dayhtml_tutorials/languages/smiles/index.html" %> and <%= link_to "InChi",  "http://www.iupac.org/inchi/" %> codes for the query structure. Useful for external database searches.
+
+    <h3><a name="neighbors"></a>Similar Structures</h3>
+
+    A table with structurally similar compounds (<em>neighbors</em>) that have been used for the current prediction.<p/>
+
+      <h4>Similarity</h4>
+      Similarity <em>in respect to the current endpoint </em>, indicated by numbers between 1 (high similarity: white)) and 0 (no similarity: black).<p/>
+
+      <h4>Structure</h4>
+      2D representation of the neighbor. Activating (red), deactivating (green) and unknown/infrequent (yellow) substructures are highlighted. <em>NOTE: 2D rendering and substructure highlighting does not work correctly in all cases!</em><p/>
+
+      <h4>Measured Activity</h4>
+      Experimental activity from the database.<p/>
+
+      <h4>Additional Information</h4>
+      
+        <b>Search Pubchem</b>
+        Retrieve additional information for the query structure from the <%= link_to 'PubChem','http://pubchem.ncbi.nlm.nih.gov/' %> database. <em>PubChem will display an error message, if the current structure is not found!</em><br/>
+    
+      <h4>SMILES/InChi</h4>
+      <%= link_to 'SMILES', "http://www.daylight.com/dayhtml_tutorials/languages/smiles/index.html" %> and <%= link_to "InChi",  "http://www.iupac.org/inchi/" %> codes for the query structure. Useful for external database searches.
+
+</div>

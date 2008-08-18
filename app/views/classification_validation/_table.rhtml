@@ -1,0 +1,69 @@
+<h2><%= type %></h2>
+<table>
+  <tr>
+    <th></th><th</th>
+    <% @versions.each do |v| %>
+      <th><%= v.sub(/branches/,'') %>
+    <% end %>
+  </tr>
+  <tr>
+    <th>Number of Predictions</th>
+    <th>tp+tn+fp+fn</th>
+    <%= render :partial => "values", :locals => {:values => @nr[type]} %>
+  </tr>
+  <tr>
+    <th>True positive predictions</th>
+    <th>tp</th>
+    <%= render :partial => "values", :locals => {:values => @tp[type]} %>
+  </tr>
+  <tr>
+    <th>True negative predictions</th>
+    <th>tn</th>
+    <%= render :partial => "values", :locals => {:values => @tn[type]} %>
+  </tr>
+  <tr>
+    <th>False positive predictions</th>
+    <th>fp</th>
+    <%= render :partial => "values", :locals => {:values => @fp[type]} %>
+  </tr>
+  <tr>
+    <th>False negative predictions</th>
+    <th>fn</th>
+    <%= render :partial => "values", :locals => {:values => @fn[type]} %>
+  </tr>
+  <tr>
+    <th>Sensitivity (true positive rate)</th>
+    <th>tp/(tp+fn)</th>
+    <%= render :partial => "values", :locals => {:values => @sens[type]} %>
+  </tr>
+  <tr>
+    <th>Specificity (true negative rate)</th>
+    <th>tn/(tn+fp)</th>
+    <%= render :partial => "values", :locals => {:values => @spec[type]} %>
+  </tr>
+  <tr>
+    <th>Positive predictivity</th>
+    <th>tp/(tp+fp)</th>
+    <%= render :partial => "values", :locals => {:values => @pp[type]} %>
+  </tr>
+  <tr>
+    <th>Negative predictivity</th>
+    <th>tn/(tn+fn)</th>
+    <%= render :partial => "values", :locals => {:values => @np[type]} %>
+  </tr>
+  <tr>
+    <th>False positive rate</th>
+    <th>fp/(tp+fn)</th>
+    <%= render :partial => "values", :locals => {:values => @fpr[type]} %>
+  </tr>
+  <tr>
+    <th>False negative rate</th>
+    <th>fn/(tn+fp)</th>
+    <%= render :partial => "values", :locals => {:values => @fnr[type]} %>
+  </tr>
+  <tr>
+    <th>Accuracy (concordance)</th>
+    <th>(tp+tn)/(tp+fp+tn+fn)</th>
+    <%= render :partial => "values", :locals => {:values => @acc[type]} %>
+  </tr>
+</table><p/>

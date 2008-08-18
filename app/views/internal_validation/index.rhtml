@@ -1,0 +1,53 @@
+<div class="lazar-form">
+  <table>
+  <tr>
+      <th>Dataset</th>
+      <th>Endpoint</th>
+      <th>Branch</th>
+      <th>Revision</th>
+      <th>Type of validation</th>
+    </tr>
+
+  <% 
+  j = 0
+  # run over all data sets
+  while j<@categories.length do 
+    
+    j += 1
+    i = 0 
+    # for each data set, run over all validations (with in general different models)
+    (@categories[j-1]).each do |cat|
+
+      # gather some general data about this validation
+      (cat.index('trunk')!=NIL) ? offset = 1 : offset = 0
+      dataset = cat.split(/\//)[-8+offset]
+      endpoint = cat.split(/\//)[-7+offset]
+      if (endpoint.length>25)
+        endpoint = endpoint[0..24] << "..."
+      end
+      revision = cat.split(/\//)[-2]
+      branch = cat.split(/\//)[-3]
+      
+      i += 1
+      if File.basename(cat).index("extsum") # we have external validation data 
+        v_type = "test set validation"
+      elsif File.basename(cat).index("loo") # we have loo data
+        v_type = "loo validation"
+      end
+  %>
+      <tr>
+        <td><%= dataset %></td>
+        <td><%= endpoint %></td>
+        <td><%= branch %></td>
+        <td><%= revision %></td>
+        <td><%= link_to(v_type, :action => :show, :id => j.to_s+'_'+i.to_s) %></td>
+      </tr>
+
+
+  <%    
+      end # end (@categories[j-1]).each do |cat|
+    end # while j<@categories.length do
+  %>
+  </table>
+
+</div>

@@ -1,0 +1,35 @@
+\documentclass[10pt, a4paper]{article}
+
+\begin{document}
+\pagestyle{empty}
+\setlength\parindent{0in}
+
+\begin{equation} 
+sim(s_q,s_t,D) = 
+    \frac{\displaystyle \sum_{f \in F} \{e^{-{p_f}^2/2 \sigma^2} | f \subseteq s_q \wedge f \subseteq s_t\}} 
+    {\displaystyle \sum_{f \in F} \{e^{-{p_f}^2/2 \sigma^2} | f \subseteq s_q \vee f \subseteq s_t\}}
+		\cdot \frac{n^{frequent}_{s_q}}{n_{s_q}}
+		\cdot \frac{n^{frequent}_{s_t}}{n_{s_t}}
+\end{equation} 
+ 
+with 
+ 
+$ p_f | f \subseteq s_q \wedge f \subseteq s_t$ \ldots significance of fragment $f$ that occurs in $s_q$ \emph{and} $s_t$ 
+ 
+$ p_f | f \subseteq s_q \vee f \subseteq s_t$ \ldots significance of fragment  $f$ that occurs in $s_q$ \emph{or} $s_t$
+
+$\sigma$ \ldots standard deviation of the gaussian distribution ($0.3$)
+
+$F$ \ldots set of significant features
+
+$n_{s_q}$ \ldots number of fragments in the query structure
+
+$n^{frequent}_{s_q}$ \ldots number of query structure fragments that occur frequently enough for statistical evaluation
+
+$n_{s_t}$ \ldots number of fragments in the neighbors
+
+$n^{frequent}_{s_t}$ \ldots number of neighbors fragments that occur frequently enough for statistical evaluation
+
+Minimum frequencies for statistical significance are derived from the $\chi^2$ definition (with Yates correction) under the assumption that the fragment occurs only in asingle class.
+
+\end{document}
