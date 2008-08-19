@@ -1,7 +1,7 @@
 require 'classification_loo2summary.rb'
 require 'regression_loo2summary.rb'
 require 'summary2png.rb'
-require 'stats.rb'
+#require 'stats.rb'
 require 'tools.rb'
 
 namespace :validation do

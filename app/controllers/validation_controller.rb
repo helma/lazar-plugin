@@ -26,9 +26,9 @@ class ValidationController < ApplicationController
   def load
     @module = LazarModule.find(params[:id])
     @conf_limit = @module.applicability_domain.to_f
-    @version = `cd vendor/plugins/lazar/lib/lazar; svn info |grep "Last Changed Rev:"|sed 's/Last Changed Rev: //'`.chomp.to_i
-    @svn_url = YAML::load(File.open("config/lazar/prediction.yml"))["version"]
-    path = "#{@module.directory}/validation/lazar/trunk/#{@version}/"
+    @tag = `cd #{RAILS_ROOT}/vendor/lib/lazar; git tag`.chomp.to_i
+    @git_url = YAML::load(File.open("config/lazar/prediction.yml"))["url"]
+    path = "#{@module.directory}/validation/lazar/trunk/#{@tag}/"
     @summary_file = path + "summary.yaml"
     @misclassification_file = path + "misclassifications.yaml"
     path.sub!(/public/,'')

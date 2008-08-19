@@ -62,7 +62,7 @@ namespace :server do
             else
               puts "Could not start lazar: #{res.exitstatus}"
             end
-    end
+           end
         end
 
         port += 1

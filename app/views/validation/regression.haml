@@ -58,12 +58,12 @@
   (
   = link_to "GNU General Public License", "http://www.gnu.org/licenses/gpl.html"
   ) with
-  = link_to 'subversion', 'http://subversion.tigris.org/'
+  = link_to 'git', 'http://git.or.cz/'
   \:
   %br/
   %code
-    svn co
-    = @svn_url
+    git clone 
+    = @git_url
   %p/
   %h3
     %a{ :name => "ad" }/

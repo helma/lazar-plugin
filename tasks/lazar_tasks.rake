@@ -5,9 +5,8 @@ require 'R.rb'
 
 namespace :lazar do
 
-  @lazar_dir = RAILS_ROOT + "/vendor/plugins/lazar/lib/lazar/"
+  @lazar_dir = RAILS_ROOT + "/vendor/lib/lazar/"
   @lazar_validation_dir = RAILS_ROOT + "/vendor/plugins/lazar/lib/validation/"
-  @lazar_tools  = RAILS_ROOT + "/vendor/plugins/lazar/lib/tools"
 
   require 'data.rb'
   require 'install.rb'
