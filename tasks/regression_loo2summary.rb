@@ -42,7 +42,7 @@ def regression_loo2summary(loo, summary_file, misclassifications_file, cumulativ
         prediction_confidences << {:id => id.to_s, :confidence => conf, :within_1log_unit => true}
       else
         prediction_confidences << {:id => id.to_s, :confidence => conf, :within_1log_unit => false}
-        misclassifications << {:id => id.to_s, :smiles => smile, :prediction => pred, :confidence => conf, :db_activities => db_activities, :unknown_features => unknown_features} if conf < ad_threshold
+        misclassifications << {:id => id.to_s, :smiles => smile, :prediction => pred, :confidence => conf, :db_activities => db_activities, :unknown_features => unknown_features} if conf > ad_threshold
       end
 
       # store data in hashes
@@ -125,8 +125,8 @@ def applicability_domain_statistics(ad, dbs, preds, confs, errors, dbs_out, pred
     p=minus(preds.values)
     p_out=minus(preds_out.values)
 
-    e = StatArray::StatArray.new(errors.values)
-    se = StatArray::StatArray.new(square(errors.values))
+    e = StatArray.new(errors.values)
+    se = StatArray.new(square(errors.values))
 
     # return hash with statistics
     { :ad => ad,

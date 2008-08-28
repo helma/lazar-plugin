@@ -6,7 +6,7 @@ namespace :program do
   desc "Checkout lazar source"
   task :checkout do
     url = YAML.load(File.open("config/lazar/prediction.yml"))['url']
-    if File.directory?(@lazar_dir)
+    if File.exist?(@lazar_dir)
       sh "cd #{@lazar_dir} && git pull"
     else
       sh "git clone #{url} #{@lazar_dir}"
@@ -14,8 +14,8 @@ namespace :program do
   end
 
   desc "Compile lazar"
-  task :compile => "lazar:program:checkout" do
-    sh "cd #{@lazar_dir}; make lazar"
+  task :compile => ["lazar:program:checkout"] do
+    sh "cd #{@lazar_dir}; make; cp -f linfrag lazar #{@bin_dir}/"
   end
 
 end
