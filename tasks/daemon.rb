@@ -1,4 +1,4 @@
-namespace :server do
+namespace :daemon do
 
   desc "Stop lazar daemons"
   task :stop => :environment do
@@ -50,7 +50,7 @@ namespace :server do
             syscall = "./lazar -k -s #{RAILS_ROOT}/#{smi} -t #{RAILS_ROOT}/#{act} -f #{RAILS_ROOT}/#{linfrag} -a #{@lazar_dir}/data/elements.txt -p #{port} -r 2>/dev/null &"
           end
 
-          sh "export R_HOME=#{RAILS_ROOT}/vendor/lib/R && cd #{@lazar_dir} && nohup #{syscall}" do |ok, res|
+          sh "cd #{@lazar_dir} && nohup #{syscall}" do |ok, res|
             if ok
               sleep(2)
               ps = `ps -fC lazar|grep '#{syscall}'`

@@ -12,7 +12,7 @@ namespace :lazar do
   require 'install.rb'
   require 'features.rb'
   require 'validation.rb'
-  require 'server.rb'
+  require 'daemon.rb'
   require 'tools.rb'
 
 end
