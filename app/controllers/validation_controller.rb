@@ -26,9 +26,9 @@ class ValidationController < ApplicationController
   def load
     @module = LazarModule.find(params[:id])
     @conf_limit = @module.applicability_domain.to_f
-    @tag = `cd #{RAILS_ROOT}/vendor/lib/lazar; git tag`.chomp.to_i
+    #@tag = `cd #{RAILS_ROOT}/vendor/lib/lazar; git tag`.chomp.to_i
     @git_url = YAML::load(File.open("config/lazar/prediction.yml"))["url"]
-    path = "#{@module.directory}/validation/lazar/trunk/#{@tag}/"
+    path = "#{@module.directory}/validation/"
     @summary_file = path + "summary.yaml"
     @misclassification_file = path + "misclassifications.yaml"
     path.sub!(/public/,'')

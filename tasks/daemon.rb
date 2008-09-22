@@ -22,6 +22,8 @@ namespace :daemon do
     port = 10000 if port < 10000
     port += 1
 
+    id = 1
+
     categories = YAML::load(File.open("config/lazar/prediction.yml"))["data"]
     categories.each do |cat_name,modules|
 
@@ -43,31 +45,47 @@ namespace :daemon do
             m["applicability_domain"] = 0.025 #unless m["applicability_domain"]
             syscall = "./lazar -s #{RAILS_ROOT}/#{smi} -t #{RAILS_ROOT}/#{cl} -f #{RAILS_ROOT}/#{linfrag} -a #{@lazar_dir}/data/elements.txt -p #{port} 2>/dev/null &"
             m["unit"] = '' unless m["unit"]
+
           elsif !act.blank?
             m["prediction_type"] = "regression"
             m["applicability_domain"] = '0.2' #unless m["applicability_domain"]
             m["unit"] = '' unless m["unit"]
             syscall = "./lazar -k -s #{RAILS_ROOT}/#{smi} -t #{RAILS_ROOT}/#{act} -f #{RAILS_ROOT}/#{linfrag} -a #{@lazar_dir}/data/elements.txt -p #{port} -r 2>/dev/null &"
+
           end
 
           sh "cd #{@lazar_dir} && nohup #{syscall}" do |ok, res|
+
             if ok
-              sleep(2)
-              ps = `ps -fC lazar|grep '#{syscall}'`
-              puts ps
-              m["pid"] = ps.split(/\s+/)[1]
+              startup = true
+              puts "Waiting for lazar to start ..."
+
+              while startup do
+                sleep(1)
+                ps = `lsof -i :#{port}`
+                startup = false unless ps.empty?
+              end
+              
+              id += 1
+              m["id"] = id
+              m["pid"] = ps.split(/\n/)[1].split(/\s+/)[1]
               m["port"] = port
               m["lazar_category_id"] = category.id
               LazarModule.create(m)
               puts "lazar started with PID #{m["pid"]} on port #{m["port"]} (#{m["prediction_type"]}, ad: #{m["applicability_domain"]})"
+
             else
               puts "Could not start lazar: #{res.exitstatus}"
+
             end
+
            end
+
         end
 
         port += 1
       end
+
     end
   end
 
