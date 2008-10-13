@@ -11,7 +11,7 @@ namespace :R do
 
     desc "install the kernlab package"
     task :kernlab do
-      sh "cd #{path} && wget http://cran.r-project.org/src/contrib/kernlab_0.9-7.tar.gz" unless File.exist?(path+"/kernlab_0.9-7.tar.gz")
+      sh "cd #{path} && wget http://www.in-silico.de/~ch/kernlab_0.9-7.tar.gz" unless File.exist?(path+"/kernlab_0.9-7.tar.gz")
       sh "cd #{path} && #{r} CMD INSTALL kernlab_0.9-7.tar.gz" unless uptodate?("#{path}/library/kernlab","#{path}/kernlab_0.9-7.tar.gz")
     end
   end
