@@ -9,15 +9,17 @@ require 'statarray'
   attr_reader :details, :activating_fragments, :deactivating_fragments, :activating_p, :deactivating_p, :unknown_fragments
 
   def initialize(endpoint_id)
-    port = LazarModule.find(endpoint_id).port
-    @socket = Socket.new( AF_INET, SOCK_STREAM, 0 )
-    sockaddr = Socket.pack_sockaddr_in( port, 'localhost' )
-    @socket.connect( sockaddr )
+    @port = LazarModule.find(endpoint_id).port
   end
 
   def predict(smiles)
-    @socket.write( smiles )
-    @details = YAML::load(@socket.read)
+
+    socket = Socket.new( AF_INET, SOCK_STREAM, 0 )
+    sockaddr = Socket.pack_sockaddr_in( @port, 'localhost' )
+    socket.connect( sockaddr )
+    socket.write( smiles )
+
+    @result = YAML::load(socket.read)
 
 
     @activating_fragments = []
@@ -26,8 +28,8 @@ require 'statarray'
     @deactivating_p = []
     @unknown_fragments = []
 
-    if @details['features']
-        @details['features'].each do |f|
+    if @result['features']
+        @result['features'].each do |f|
            @activating_fragments << f['smarts'] if f['property'] == 'activating'
            @deactivating_fragments << f['smarts'] if f['property'] == 'deactivating'
            @activating_p << f['p_ks'] if f['property'] == 'activating'
@@ -35,25 +37,25 @@ require 'statarray'
         end
     end   
  
-    if @details['unknown_features']
-        @details['unknown_features'].each do |f|
+    if @result['unknown_features']
+        @result['unknown_features'].each do |f|
           @unknown_fragments << f
         end
     end
   end
 
   def prediction
-    @details['prediction']
+    @result['prediction']
   end
 
   def confidence
-    @details['confidence']
+    @result['confidence']
   end
 
   def db_activity
     db_act = ''
-    if @details['db_activity']
-	    @details['db_activity'].each do |act|
+    if @result['db_activity']
+	    @result['db_activity'].each do |act|
     		db_act += act.to_s
             db_act += ' / '
 	    end
@@ -62,30 +64,29 @@ require 'statarray'
     end
     db_act.sub(/ \/ $/,'')
   end
-    
 
   def smiles
-    @details['smiles']
+    @result['smiles']
   end
 
   def inchi
-    @details['inchi']
+    @result['inchi']
   end
 
   def neighbors
-    @details['neighbors']
+    @result['neighbors']
   end
 
   def features
-    @details['features']
+    @result['features']
   end
 
   def med_ndist
-    @details['med_ndist']
+    @result['med_ndist']
   end
 
   def std_ndist
-    @details['std_ndist']
+    @result['std_ndist']
   end
 
   def db_activity_class
@@ -105,10 +106,10 @@ require 'statarray'
 
     unknown_features = low_conf = false
     begin
-      if @details['unknown_features']
+      if @result['unknown_features']
         unknown_features = true
       end
-      if @details['confidence'] < applicability_domain.to_f
+      if @result['confidence'] < applicability_domain.to_f
         low_conf = true
       end
     rescue
@@ -125,8 +126,8 @@ require 'statarray'
   def prediction_quality
     explanation = ""
 
-    if @details['db_activity']
-        db_statarr = @details['db_activity'].to_statarray
+    if @result['db_activity']
+        db_statarr = @result['db_activity'].to_statarray
         if ((db_statarr.median - prediction.to_f).abs <= 1.0)
             explanation = "<p/>prediction within 1 log unit"
         else

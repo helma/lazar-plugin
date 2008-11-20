@@ -7,17 +7,17 @@ class LazarClassifier
 
   def initialize(endpoint_id)
 
-    port = LazarModule.find(endpoint_id).port
-    @socket = Socket.new( AF_INET, SOCK_STREAM, 0 )
-    sockaddr = Socket.pack_sockaddr_in( port, 'localhost' )
-    @socket.connect( sockaddr )
+    @port = LazarModule.find(endpoint_id).port
 
   end
 
   def predict(smiles)
 
-    @socket.write( smiles )
-    @details = YAML::load(@socket.read)
+    socket = Socket.new( AF_INET, SOCK_STREAM, 0 )
+    sockaddr = Socket.pack_sockaddr_in( @port, 'localhost' )
+    socket.connect( sockaddr )
+    socket.write( smiles )
+    @result = YAML::load(socket.read)
 
     @activating_fragments = []
     @deactivating_fragments = []
@@ -25,8 +25,8 @@ class LazarClassifier
     @deactivating_p = []
     @unknown_fragments = []
 
-    if @details['features']
-      @details['features'].each do |f|
+    if @result['features']
+      @result['features'].each do |f|
         @activating_fragments << f['smarts'] if f['property'] == 'activating'
         @deactivating_fragments << f['smarts'] if f['property'] == 'deactivating'
         @activating_p << f['p_chisq'] if f['property'] == 'activating'
@@ -34,25 +34,25 @@ class LazarClassifier
       end
     end
 
-    if @details['unknown_features']
-      @details['unknown_features'].each do |f|
+    if @result['unknown_features']
+      @result['unknown_features'].each do |f|
         @unknown_fragments << f
       end
     end
   end
 
   def prediction
-    @details['prediction']
+    @result['prediction']
   end
 
   def confidence
-    @details['confidence']
+    @result['confidence']
   end
 
   def db_activity
     db_act = ''
-    if @details['db_activity']
-	    @details['db_activity'].each do |act|
+    if @result['db_activity']
+	    @result['db_activity'].each do |act|
 	      case act
 	      when 0
     		db_act += 'inactive / '
@@ -68,11 +68,11 @@ class LazarClassifier
 
   def db_activity_class
     db_act = 0
-    if @details['db_activity']
-	    @details['db_activity'].each do |act|
+    if @result['db_activity']
+	    @result['db_activity'].each do |act|
 	      db_act += act.to_i
 	    end
-	    db_act = db_act.to_f/@details['db_activity'].size
+	    db_act = db_act.to_f/@result['db_activity'].size
 	    if db_act > 0.5
 	      cl = "class = 'active'"
 	    elsif db_act < 0.5
@@ -87,27 +87,27 @@ class LazarClassifier
   end
 
   def smiles
-    @details['smiles']
+    @result['smiles']
   end
 
   def inchi
-    @details['inchi']
+    @result['inchi']
   end
 
   def neighbors
-    @details['neighbors']
+    @result['neighbors']
   end
 
   def features
-    @details['features']
+    @result['features']
   end
 
   def med_ndist
-    @details['med_ndist']
+    @result['med_ndist']
   end
 
   def std_ndist
-    @details['std_ndist']
+    @result['std_ndist']
   end
 
   def applicability_domain 
@@ -130,10 +130,10 @@ class LazarClassifier
 
     unknown_features = low_conf = false
     begin
-      if !@details['unknown_features'].blank?
+      if !@result['unknown_features'].blank?
         unknown_features = true
       end
-      if (@details['confidence'].to_f.abs < applicability_domain.to_f)
+      if (@result['confidence'].to_f.abs < applicability_domain.to_f)
         low_conf = true
       end
     rescue

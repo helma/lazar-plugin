@@ -1,0 +1,27 @@
+<%= javascript_include_tag "jme", :plugin => "opentox" %>
+
+<div class="jme">
+
+<!--[if IE]>
+
+  <object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" 
+                  codebase="http://java.sun.com/update/1.5.0/jinstall-1_5_0-windows-i586.cab"
+                  height="360" width="512" >
+    <param name="codebase" value="/plugin_assets/opentox/applets/" />
+    <param name="code" value="JME" />
+  <script>/*<![endif]--><script type="text/javascript">/**/</script>
+<!--[if !IE]> -->
+  <object codetype="application/x-java-applet" classid="java:JME.class" name="JME" codebase="/plugin_assets/opentox/applets/" archive="JME.jar" width="512" height="360">
+<!--<![endif]-->
+    <param name="options" value="polarnitro" /> 
+    <!-- For Konqueror -->
+    <param name="archive" value="JME.jar" />
+    <param name="persistState" value="false" />
+    <% if @molfile %>
+    <param name="mol" value="<%= @molfile %>" />
+    <% end %>
+    Please enable Java and JavaScript in your browser to use the JME editor. You can find instructions <%= link_to "here", "http://www.java.com/en/download/help/enable_browser.xml" %>.
+  </object><p/>
+
+</div>
+

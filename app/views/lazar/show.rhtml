@@ -1,11 +1,5 @@
 <div class='lazar-prediction'>
 
-  <!--
-<em>
-This is a beta version of the new lazar webinterface. Please report bugs and unexpected behaviour to <%= mail_to "helma@in-silico.de",  nil, :replace_at => "[at]", :encode => "javascript" %>.
-</em>
--->
-
   <% if @lazar %>
 
   <table>
@@ -29,7 +23,7 @@ This is a beta version of the new lazar webinterface. Please report bugs and une
       <td <%= @lazar.db_activity_class %>><%= translate_activity(@lazar.db_activity, @module.unit) %> <%= @lazar.prediction_quality %></td>
       
       <td class="sim100">
-        <%= link_to "Relevant&nbsp;Fragments", :action => :fragments, :endpoint_id => params[:endpoint_id]  %><br/>
+        <%= link_to "Relevant&nbsp;Fragments", :controller => :lazar_fragments, :action => :index, :endpoint_id => params[:endpoint_id]  %><br/>
         <% escaped_inchi = CGI.escape(@lazar.inchi)%>
         <%= link_to "DSSTox&nbsp;database", "http://www.epa.gov/dsstox_structurebrowser/?qtype=inchi&qval=#{escaped_inchi}", :confirm => 'You are sending structural information (InChI) of this compound to the Internet. Do you want to proceed?' %><br/>
         <%= link_to "PubChem&nbsp;database", h("http://www.ncbi.nlm.nih.gov/sites/entrez?cmd=PureSearch&db=pccompound&term=\"#{escaped_inchi}\""), :confirm => 'You are sending structural information (InChI) of this compound to the Internet. Do you want to proceed?' %><br/>
