@@ -18,7 +18,7 @@
     <div id='nav'>
       <ul>
 
-        <li<%= controller.action_name == 'input' ? " id='sel'" : "" %>> <%=link_to 'Input', :controller => 'lazar', :action => 'input', :endpoint_id => params[:endpoint_id], :smiles => params[:smiles] %> </li>
+        <li<%= controller.controller_name == 'lazar' && controller.action_name == 'index' ? " id='sel'" : "" %>> <%=link_to 'Input', :controller => 'lazar', :action => 'index', :endpoint_id => params[:endpoint_id], :smiles => params[:smiles] %> </li>
 
         <li<%= controller.controller_name == 'validation' ? " id='sel'" : "" %>>
         <%# if controller.action_name == 'predict' %>
