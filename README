@@ -1,6 +1,8 @@
 Lazar
 =====
 
+DEPRECATED: This plugin will be substituted by OpenTox (www.opentox.org) components.
+
 1. Lazar installation
 
 	- install OpenTox (see vendor/plugins/opentox/README)
